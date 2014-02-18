@@ -149,7 +149,6 @@ def residuals1(p,Y,X,error,A,Area,DRE): #date is an array
 			model = (spec_integral(R0,dR,T_0,dT,((X[i]-t)/(1+z)),A[:,i],DRE[:,i]))/Area[i]
 		err = ((Y[i] - model)/(error[i]))
 		array.append(err)
-	#print np.sum(array)
 	return array
 
 p0 = [0.0, 2.0, 20000.0, 200.0, 5.0]
@@ -161,24 +160,23 @@ print 'R0 =', res1[0][0], 'dR =', res1[0][1], 'T0 =', res1[0][2], 'dT =', res1[0
 
 def residuals2(p,Y,X,error,A,Area,DRE): #date is an array
 	array = []
-	R0,dR,d2R,T_0,dT = p
+	R0,dR,d2R,T_0,dT,t = p
 	for i in range(0,len(X)):
-		if X[i] < 47.5216:
+		if X[i] < t:
 			model = 0.0
-		if X[i] > 47.5216:
-			model = (spec_integral1(R0,dR,d2R,T_0,dT,((X[i]-47.5216)/(1+z)),A[:,i],DRE[:,i]))/Area[i]
+		if X[i] > t:
+			model = (spec_integral1(R0,dR,d2R,T_0,dT,((X[i]-t)/(1+z)),A[:,i],DRE[:,i]))/Area[i]
 		err = ((Y[i] - model)/(error[i]))
 		array.append(err)
-	#print np.sum(array)
 	return array
 
-p1 = [0.0, 2.0, -2.0, 20000.0, 200.0]
+p1 = [0.0, 2.0, 2.0, 20000.0, 200.0, 10.0]
 print 'Model 2'
 res2 = leastsq(residuals2, p1, args=(Y,X,error,A,Area,DRE))
-print 'R0 =', res2[0][0], 'dR =', res2[0][1], 'd2R =', res2[0][2], 'T0 =', res2[0][3], 'dT =', res2[0][4]#, 'Explosion day =', res2[0][5] + firstobs_Mjd 
+print 'R0 =', res2[0][0], 'dR =', res2[0][1], 'd2R =', res2[0][2], 'T0 =', res2[0][3], 'dT =', res2[0][4], 'Explosion day =', res2[0][5] + firstobs_Mjd 
 
 ############################## Model Plotting
-#
+
 time = []
 time1 = []
 model = []
@@ -188,7 +186,7 @@ yflux = []
 fluxerror = []
 for i in np.arange(0,60,(1/(1+z))):
 		time.append(i*(1+z)+res1[0][4])
-		time1.append(i*(1+z)+47.5216)
+		time1.append(i*(1+z)+res2[0][5])
 		model.append((spec_integral(res1[0][0],res1[0][1],res1[0][2],res1[0][3],i,A[:,1],DRE[:,1]))/Area[1])
 		model1.append((spec_integral1(res2[0][0],res2[0][1],res2[0][2],res2[0][3],res2[0][4],i,A[:,1],DRE[:,1]))/Area[1])
 for i in range(0,15):
@@ -214,8 +212,8 @@ def chi_square2(Y,X,error,A,Area,DRE,res):
 	for i in range(0, len(X)):
 		if X[i] < 47.5216:
 			model = 0.0
-		if X[i] > 47.5216:
-			model = (spec_integral1(res[0][0],res[0][1], res[0][2],res[0][3],res[0][4],((X[i]-47.5216)/(1+z)),A[:,i],DRE[:,i]))/Area[i]
+		if X[i] > res[0][5]:
+			model = (spec_integral1(res[0][0],res[0][1], res[0][2],res[0][3],res[0][4],((X[i]-res[0][5])/(1+z)),A[:,i],DRE[:,i]))/Area[i]
 		temp[i] = ((Y[i]-model)/error[i])**2.0
 	return np.sum(temp)
 
